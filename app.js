@@ -1,28 +1,35 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-
-const Blog = require('./models/blog')
+require('express-async-errors')
+const logger = require('./utils/logger')
+const middleware = require('./middleware')
 
 app.use(cors())
 app.use(express.json())
 
-app.get('/api/blogs', (request, response) => {
-    Blog
-        .find({})
-        .then(blogs => {
-            response.json(blogs)
-        })
-})
+const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
 
-app.post('/api/blogs', (request, response) => {
-    const blog = new Blog(request.body)
+app.use(middleware.tokenExtractor)
+app.use('/api/blogs', middleware.userExtractor, blogsRouter)
+app.use('/api/login', loginRouter)
+app.use('/api/users', usersRouter)
 
-    blog
-        .save()
-        .then(result => {
-            response.status(201).json(result)
-        })
-})
+
+
+const errorHandler = (error, request, response, next) => {
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    } else if (error.name === 'JsonWebTokenError') {
+        return response.status(401).json({ error: 'invalid token' })
+    }
+    logger.error(error.message)
+    next(error)
+}
+app.use(errorHandler)
 
 module.exports = app

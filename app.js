@@ -18,6 +18,11 @@ app.use('/api/login', loginRouter)
 app.use('/api/users', usersRouter)
 
 
+if (process.env.NODE_ENV === 'test') {
+    const testingRouter = require('./controllers/testing')
+    app.use('/api/testing', testingRouter)
+}
+
 
 const errorHandler = (error, request, response, next) => {
     if (error.name === 'CastError') {

@@ -44,9 +44,11 @@ router.put('/:id', async (request, response) => {
     if(!blog) {
         return response.status(404).end()
     }
+    /*
     if ( blog.user._id.toString() !== request.user._id.toString() ) {
         return response.status(400).end()
     }
+    */
     let updatedBlog = await Blog.findByIdAndUpdate(request.params.id, body, { new: true, runValidators: true, context: 'query' })
     response.json(updatedBlog)
 })

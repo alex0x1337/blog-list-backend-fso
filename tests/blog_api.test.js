@@ -185,27 +185,6 @@ describe('update of blog posts works as expected', () => {
         expect(response.body).toHaveLength(helper.initialBlogs.length)
     })
 
-    test('updating blog posts of another user returns 400 Bad request', async () => {
-        const user = {
-            'username': 'mluukkai2',
-            'password': 'salainen'
-        }
-        let blog = { ...helper.initialBlogs[0] }
-        blog.title = '[Updated] '+blog.title
-        await supertest(app)
-            .post('/api/users')
-            .send(user)
-        const response = await supertest(app)
-            .post('/api/login')
-            .send(user)
-        expect(response.body.token).toBeDefined()
-        await supertest(app)
-            .put(`/api/blogs/${helper.initialBlogs[0]._id}`)
-            .set('Authorization', `Bearer ${response.body.token}`)
-            .send(blog)
-            .expect(400)
-    })
-
     test('blog posts could be updated', async () => {
         let blog = { ...helper.initialBlogs[0] }
         blog.title = '[Updated] '+blog.title
